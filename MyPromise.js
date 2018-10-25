@@ -1,4 +1,5 @@
 // http://abcinblog.blogspot.com/2018/05/javascript-promise.html
+// http://thecodebarbarian.com/write-your-own-node-js-promise-library-from-scratch.html
 class MyPromise {                 // в области видимости class ведёт себя как let
   constructor( executor ) {
     this._status = 'pending'
@@ -25,9 +26,9 @@ class MyPromise {                 // в области видимости class 
     // через this терятся значение value
     console.log("MyPromise._VALUE IN THEN -:-", MyPromise._value)
     console.log("onFulfilled IN THEN -:-", onFulfilled )
-
-    if (this._status === 'fulfilled') 
-      return MyPromise.resolve( onFulfilled(MyPromise._value) )
+		if (this._status === 'fulfilled') 
+			console.log("onFulfilled IN THEN AFTER IF -:-", onFulfilled )
+      return MyPromise.resolve( onFulfilled(  MyPromise._value) )
 
     if (this._status === 'rejected') 
       return MyPromise.reject( onRejected(MyPromise._reason) )
@@ -64,7 +65,7 @@ class MyPromise {                 // в области видимости class 
 }
 
 const promise = new MyPromise( ( res, rej ) => res(5) )
-promise.then( a => a * a).then(x=>console.log(x))
+promise.then( a => a * a).then( x => console.log( 'AFTER ALL', x ) )
 
 // MyPromise.resolve("hello")
 
