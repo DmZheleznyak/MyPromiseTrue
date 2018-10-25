@@ -15,26 +15,25 @@ class MyPromise {                 // в области видимости class 
     const reject = ( reason ) => {    
       this._status = 'rejected'
       this._reason = reason
-       // return this.catch
-      //вернёт причину
+      return MyPromise.reject(reason)
     }
-    // console.log(executor)
     executor(resolve, reject)
   }
 
   then(onFulfilled, onRejected) {     
     // через this терятся значение value
-    console.log("MyPromise._VALUE IN THEN -:-", MyPromise._value)
-    console.log("onFulfilled IN THEN -:-", onFulfilled )
-		if (this._status === 'fulfilled') 
-			console.log("onFulfilled IN THEN AFTER IF -:-", onFulfilled )
-      return MyPromise.resolve( onFulfilled(  MyPromise._value) )
+    if (this._status === 'fulfilled') 
+      // console.log("onFulfilled IN THEN AFTER IF -:-", onFulfilled )
+      onFulfilled
+      return MyPromise.resolve( onFulfilled(MyPromise._value) )
 
-    if (this._status === 'rejected') 
+    if (this._status === 'rejected')
+      onRejected 
       return MyPromise.reject( onRejected(MyPromise._reason) )
   }
 
-  catch(err) {                        // реализовать try , catch
+// Ошибки выброшеные из асинхронных функций не будут пойманы методом catch
+  catch(onRejected) {                      
     try {
       throw new Error(err)
     } catch (err) {
@@ -46,12 +45,12 @@ class MyPromise {                 // в области видимости class 
 
   static resolve(value) {
     this._value = value 
-    return new MyPromise(value=>value)
+    return new MyPromise( value => value )
   }
 
   static reject(reason) {
     this._reason = reason
-    return new MyPromise(reason)
+    return new MyPromise( reason => reason )
   }
 
   // static all([p1, p2, p3]) {
@@ -64,8 +63,13 @@ class MyPromise {                 // в области видимости class 
 
 }
 
-const promise = new MyPromise( ( res, rej ) => res(5) )
-promise.then( a => a * a).then( x => console.log( 'AFTER ALL', x ) )
+const promise = new MyPromise( ( res, rej ) => rej(5) )
+// promise.then( x => console.log(x) ).catch( err => err )
+promise
+  .then( a => a * a)
+  .then(r => r * r)
+  .then( x => console.log('AFTER ALL', x ) )
+  .catch( err => err )
 
 // MyPromise.resolve("hello")
 
