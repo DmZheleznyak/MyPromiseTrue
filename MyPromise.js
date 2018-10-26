@@ -4,7 +4,7 @@ class MyPromise {                 // в области видимости class 
   constructor( executor ) {
     this._status = 'pending'
     this._value =  null     // сохраняю значения чтобы воспользоватся ими в ф-ии
-    this._reason = null
+    // this._reason = null
 
     const _resolve = value => {
       this._status = 'fulfilled'
@@ -13,7 +13,7 @@ class MyPromise {                 // в области видимости class 
 
     const _reject = reason => {
       this._status = 'rejected'
-      this._reason = reason      
+      this._value = reason      
     }       
 
     executor(_resolve, _reject)
@@ -23,46 +23,38 @@ class MyPromise {                 // в области видимости class 
     if( this._status === "fulfilled") {
       try {
         this._value = onFulfilled( this._value ) 
-        console.log( this._value )
         return this
-      } catch(err) { 
-        // this._reason = onRejected( err )
-        // this.catch(onRejected)
-        // return this
+      } catch(err) {
+        console.log(`ERROR.MESSAGE IN CATCH ONFULFILLED`, err.message)
+        return this
       }
     }
 
-    if ( this._status === 'rejected') {
-      console.log("onRejected when status rejected", onRejected)
-      this._reason = onRejected( this._reason )
-      return this
-    }
+    // if ( this._status === 'rejected') {
+    //   // this._reason = onRejected( this._reason )
+    //   return this
+    // }
     
   }
 
-  catch(onRejected) {
-    console.log(onRejected)                   
-    this.then(null , onRejected(this._reason))
+  catch(onRejected) {                   
+    this.then(null , onRejected)
   }
 }
 
-const promise = new Promise( ( res, rej ) => {
-    setTimeout( () => res( 88 ) ,1001 )
-  })
-
-console.log(promise)
+const promise = new MyPromise( ( res, rej ) => res(5) )
 
 promise
   .then(r => {
-    r * r
-    throw new Error()
+    throw new Error(r * r)
   })
-  .catch( err => console.log( err ))
+  .catch( (err) => console.log(err) ) // реализовать catch пропустить эстафету не взирая на ошибку
   .then(r => r * r)
   .then( x => console.log('AFTER ALL', x ) )
-  .catch( err => console.log(err) )  // <- здесь прописываем обработчик ошибки
+  // .catch( err => console.log(err) )  // <- здесь прописываем обработчик ошибки
  
 
+	
 // MyPromise.resolve("hello")
 
 // function showName(name) {
