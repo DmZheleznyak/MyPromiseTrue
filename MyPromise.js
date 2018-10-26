@@ -3,73 +3,65 @@
 class MyPromise {                 // в области видимости class ведёт себя как let
   constructor( executor ) {
     this._status = 'pending'
-    this._value = null         // сохраняю значения чтобы воспользоватся ими в ф-ии
-    this._reason = null       //
-//  в оригинале есть массив со всеми обещаниями
-    const resolve = ( value ) => {
+    this._value =  null     // сохраняю значения чтобы воспользоватся ими в ф-ии
+    this._reason = null
+
+    const _resolve = value => {
       this._status = 'fulfilled'
       this._value = value
-      return MyPromise.resolve(value)
     }
 
-    const reject = ( reason ) => {    
+    const _reject = reason => {
       this._status = 'rejected'
-      this._reason = reason
-      return MyPromise.reject(reason)
-    }
-    executor(resolve, reject)
+      this._reason = reason      
+    }       
+
+    executor(_resolve, _reject)
   }
 
   then(onFulfilled, onRejected) {     
-    // через this терятся значение value
-    if (this._status === 'fulfilled') 
-      // console.log("onFulfilled IN THEN AFTER IF -:-", onFulfilled )
-      onFulfilled
-      return MyPromise.resolve( onFulfilled(MyPromise._value) )
-
-    if (this._status === 'rejected')
-      onRejected 
-      return MyPromise.reject( onRejected(MyPromise._reason) )
-  }
-
-// Ошибки выброшеные из асинхронных функций не будут пойманы методом catch
-  catch(onRejected) {                      
-    try {
-      throw new Error(err)
-    } catch (err) {
-      console.log(`Ошибка: ${err}`)
+    if( this._status === "fulfilled") {
+      try {
+        this._value = onFulfilled( this._value ) 
+        console.log( this._value )
+        return this
+      } catch(err) { 
+        // this._reason = onRejected( err )
+        // this.catch(onRejected)
+        // return this
+      }
     }
-  } 
 
-  finally( fn ) { return fn() }
-
-  static resolve(value) {
-    this._value = value 
-    return new MyPromise( value => value )
+    if ( this._status === 'rejected') {
+      console.log("onRejected when status rejected", onRejected)
+      this._reason = onRejected( this._reason )
+      return this
+    }
+    
   }
 
-  static reject(reason) {
-    this._reason = reason
-    return new MyPromise( reason => reason )
+  catch(onRejected) {
+    console.log(onRejected)                   
+    this.then(null , onRejected(this._reason))
   }
-
-  // static all([p1, p2, p3]) {
-  //   [].map(p => if (p._status === 'fulfilled') return [].push(p) )
-  //   // если одно из обещаний будет отклонено, вернётся отмена , то есть вызов reject
-  // }
-  
-  
-  static race() {}
-
 }
 
-const promise = new MyPromise( ( res, rej ) => rej(5) )
-// promise.then( x => console.log(x) ).catch( err => err )
+const promise = new Promise( ( res, rej ) => {
+    setTimeout( () => res( 88 ) ,1001 )
+  })
+
+console.log(promise)
+
 promise
-  .then( a => a * a)
+  .then(r => {
+    r * r
+    throw new Error()
+  })
+  .catch( err => console.log( err ))
   .then(r => r * r)
   .then( x => console.log('AFTER ALL', x ) )
-  .catch( err => err )
+  .catch( err => console.log(err) )  // <- здесь прописываем обработчик ошибки
+ 
 
 // MyPromise.resolve("hello")
 
