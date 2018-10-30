@@ -1,90 +1,61 @@
 // http://abcinblog.blogspot.com/2018/05/javascript-promise.html
 // http://thecodebarbarian.com/write-your-own-node-js-promise-library-from-scratch.html
-class MyPromise {                 // в области видимости class ведёт себя как let
+class MyPromise {            
   constructor( executor ) {
     this._status = 'pending'
-    this._value =  null     // сохраняю значения чтобы воспользоватся ими в ф-ии
-    // this._reason = null
+    this._value =  null 
 
-    const _resolve = value => {
-      this._status = 'fulfilled'
-      this._value = value
-    }
-
-    const _reject = reason => {
-      this._status = 'rejected'
-      this._value = reason      
-    }       
-
-    executor(_resolve, _reject)
+    executor( this._resolve.bind(this), this._reject.bind(this) )
   }
 
-  then(onFulfilled, onRejected) {     
+  _resolve( value ) {
+    this._status = 'fulfilled'
+    this._value = value
+  }
+
+  _reject(reason) {
+    this._status = 'rejected'
+    this._value = reason      
+  } 
+
+  then(onFulfilled, onRejected) {
+        
     if( this._status === "fulfilled") {
+      
       try {
         this._value = onFulfilled( this._value ) 
         return this
       } catch(err) {
-        console.log(`ERROR.MESSAGE IN CATCH ONFULFILLED`, err.message)
+        this._value = err
+        this._status = 'rejected'
         return this
       }
+
     }
 
-    // if ( this._status === 'rejected') {
-    //   // this._reason = onRejected( this._reason )
-    //   return this
-    // }
-    
+    if ( this._status === 'rejected') {
+      onRejected( this._value )
+      this._status = 'fulfilled'
+      return this
+    }
+
   }
 
-  catch(onRejected) {                   
-    this.then(null , onRejected)
+  catch(onRejected) {       
+    return this.then(null , onRejected)
   }
+
 }
 
-const promise = new MyPromise( ( res, rej ) => res(5) )
+const promise = new Promise( ( res, rej ) => rej(5) )
 
 promise
-  .then(r => {
-    throw new Error(r * r)
-  })
-  .catch( (err) => console.log(err) ) // реализовать catch пропустить эстафету не взирая на ошибку
-  .then(r => r * r)
-  .then( x => console.log('AFTER ALL', x ) )
-  // .catch( err => console.log(err) )  // <- здесь прописываем обработчик ошибки
- 
+  // .then( r => { throw new Error(r * r) } )
+  .catch( (err) => console.log(`Ошибка: ${err}`) )
+  .then( r => r * r )
+  .then( x => console.log( 'AFTER ALL' , x ) )
 
 	
-// MyPromise.resolve("hello")
-
-// function showName(name) {
-// 	if (name !== 'Dima') {
-// 		throw new Error('Gde Dima?')
-// 	}
-	
-// 	alert('Zdarova Dimon!');
-//  }
- 
-//  try {
-// 	showName('Dima');
-//  } catch (err) {
-// 	 alert(`Произошла какая-то ошибка с сообщением: ${err.message}`)
-//  }
-
-// promise.then( a => a + 2 ).then(x=>console.log(x))
-// function myPromise() {}
-// pr = new myPromise((res, rej) => {
-//   res(5)
-// })
-// pr.then( a => console.log(a))
-
-// promise.then( a => a + 2 ).then(x=>console.log(x))
-// function myPromise() {}
-// pr = new myPromise((res, rej) => {
-//   res(5)
-// })
-// pr.then( a => console.log(a))
-
 // Promise.reject() - возвращает отклоненное обещание.
 // Promise.resolve() - возвращает разрешенное обещание.
 // Promise.race() - берет массив (или любой итерабельный) и возвращает обещание, 
