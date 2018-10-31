@@ -5,7 +5,8 @@ class MyPromise {
     this._status = 'pending'
     this._value =  null 
 
-    executor( this._resolve.bind(this), this._reject.bind(this) )
+    executor( this._resolve.bind(this), 
+              this._reject.bind(this) )
   }
 
   _resolve( value ) {
@@ -13,45 +14,60 @@ class MyPromise {
     this._value = value
   }
 
-  _reject(reason) {
+  _reject( reason ) {
     this._status = 'rejected'
     this._value = reason      
   } 
 
-  then(onFulfilled, onRejected) {
+  then( onFulfilled, onRejected ) {
         
-    if( this._status === "fulfilled") {
+    if( this._status === "fulfilled" ) {
       
       try {
         this._value = onFulfilled( this._value ) 
-        return this
       } catch(err) {
         this._value = err
         this._status = 'rejected'
-        return this
       }
-
-    }
-
-    if ( this._status === 'rejected') {
-      onRejected( this._value )
-      this._status = 'fulfilled'
       return this
+
     }
 
+    if ( this._status === 'rejected' ) {
+
+      try {
+        onRejected( this._value )
+        this._status = 'fulfilled'  
+        
+      } catch(e) {
+        console.log(e)
+        
+      }
+      return this 
+    }
+  
   }
 
-  catch(onRejected) {       
-    return this.then(null , onRejected)
+// не правильно отрабатывает catch. maybe
+  catch( onRejected ) {    
+    if (this._status === 'fulfilled') {
+      console.log('функция иди просто мимо c миром')
+      return this
+    }   
+
+    if ( this._status === 'rejected' ) {
+      return this.then( null , onRejected )
+    }
+    
   }
 
 }
 
-const promise = new Promise( ( res, rej ) => rej(5) )
+const promise = new MyPromise( ( res, rej ) => res( 5 ) )
 
 promise
-  // .then( r => { throw new Error(r * r) } )
-  .catch( (err) => console.log(`Ошибка: ${err}`) )
+  // .then( r => { throw new Error( r * r ) } )
+  .catch( ( err ) => console.log(`Ошибка: ${err}`) )
   .then( r => r * r )
   .then( x => console.log( 'AFTER ALL' , x ) )
 
