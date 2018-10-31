@@ -37,13 +37,14 @@ class MyPromise {
 
       try {
         onRejected( this._value )
-        this._status = 'fulfilled'  
-        
+        this._status = 'fulfilled'
+        this._value = undefined  
       } catch(e) {
-        console.log(e)
-        
+        this._status = 'fulfilled'
+        console.log('ERROR IN rejected, IN THEN', e)  
       }
       return this 
+
     }
   
   }
@@ -63,7 +64,7 @@ class MyPromise {
 
 }
 
-const promise = new MyPromise( ( res, rej ) => res( 5 ) )
+const promise = new MyPromise( ( res, rej ) => rej( 5 ) )
 
 promise
   // .then( r => { throw new Error( r * r ) } )
