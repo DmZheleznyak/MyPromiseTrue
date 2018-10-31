@@ -5,8 +5,7 @@ class MyPromise {
     this._status = 'pending'
     this._value =  null 
 
-    executor( this._resolve.bind(this), 
-              this._reject.bind(this) )
+    executor( this._resolve.bind(this), this._reject.bind(this) )
   }
 
   _resolve( value ) {
@@ -25,7 +24,7 @@ class MyPromise {
       
       try {
         this._value = onFulfilled( this._value ) 
-      } catch(err) {
+      } catch( err ) {
         this._value = err
         this._status = 'rejected'
       }
@@ -39,9 +38,8 @@ class MyPromise {
         onRejected( this._value )
         this._status = 'fulfilled'
         this._value = undefined  
-      } catch(e) {
-        this._status = 'fulfilled'
-        console.log('ERROR IN rejected, IN THEN', e)  
+      } catch( err ) {
+
       }
       return this 
 
@@ -49,10 +47,9 @@ class MyPromise {
   
   }
 
-// не правильно отрабатывает catch. maybe
-  catch( onRejected ) {    
+  catch( onRejected ) {  
+
     if (this._status === 'fulfilled') {
-      console.log('функция иди просто мимо c миром')
       return this
     }   
 
@@ -64,13 +61,13 @@ class MyPromise {
 
 }
 
-const promise = new MyPromise( ( res, rej ) => rej( 5 ) )
+const promise = new MyPromise( ( res, rej ) => res( 5 ) )
 
 promise
-  // .then( r => { throw new Error( r * r ) } )
-  .catch( ( err ) => console.log(`Ошибка: ${err}`) )
+  .then( r => { throw new Error( r * r ) } )
   .then( r => r * r )
   .then( x => console.log( 'AFTER ALL' , x ) )
+  .catch( ( err ) => console.log(`Ошибка: ${err}`) )
 
 	
 // Promise.reject() - возвращает отклоненное обещание.
